@@ -15,6 +15,8 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
     protected static async beforeEach() {
         await super.beforeEach()
 
+        this.fakeExecToPreventActual()
+
         this.instance = await this.NpmAutopackage()
     }
 
@@ -44,7 +46,7 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
         let calledCmd = ''
 
         // @ts-ignore
-        NpmAutopackage.exec = (cmd: string) => {
+        NpmAutopackage.execSync = (cmd: string) => {
             calledCmd = cmd
             return ''
         }
@@ -53,9 +55,14 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
 
         assert.isEqual(
             calledCmd,
-            `spruce create.module --destination ${this.installDir}`,
-            'Should have called exec!'
+            `spruce create.module --name "${this.packageName}" --destination "${this.installDir}/${this.packageName}" --description "${this.packageDescription}"`,
+            'Should have called `spruce create.module`!'
         )
+    }
+
+    private static fakeExecToPreventActual() {
+        // @ts-ignore
+        NpmAutopackage.execSync = () => {}
     }
 
     private static readonly packageName = generateId()

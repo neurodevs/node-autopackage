@@ -1,15 +1,19 @@
-import { exec } from 'child_process'
+import { execSync } from 'child_process'
 import { assertOptions } from '@sprucelabs/schema'
 
 export default class NpmAutopackage implements Autopackage {
     public static Class?: AutopackageConstructor
-    public static exec = exec
+    public static execSync = execSync
 
+    private packageName: string
+    private packageDescription: string
     private installDir: string
 
     protected constructor(options: AutopackageOptions) {
-        const { installDir } = options
+        const { name, description, installDir } = options
 
+        this.packageName = name
+        this.packageDescription = description
         this.installDir = installDir
     }
 
@@ -27,15 +31,15 @@ export default class NpmAutopackage implements Autopackage {
     }
 
     private executeCreateModule() {
-        this.exec(this.createModuleCmd)
+        this.execSync(this.createModuleCmd, { encoding: 'utf-8' })
     }
 
-    private get exec() {
-        return NpmAutopackage.exec
+    private get execSync() {
+        return NpmAutopackage.execSync
     }
 
     private get createModuleCmd() {
-        return `spruce create.module --destination ${this.installDir}`
+        return `spruce create.module --name "${this.packageName}" --destination "${this.installDir}/${this.packageName}" --description "${this.packageDescription}"`
     }
 
     private static assertOptions(options: AutopackageOptions) {
