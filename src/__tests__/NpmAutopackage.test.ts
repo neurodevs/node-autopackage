@@ -1,5 +1,13 @@
-import AbstractSpruceTest, { test, assert } from '@sprucelabs/test-utils'
-import NpmAutopackage, { Autopackage } from '../components/NpmAutopackage'
+import AbstractSpruceTest, {
+    test,
+    assert,
+    errorAssert,
+    generateId,
+} from '@sprucelabs/test-utils'
+import NpmAutopackage, {
+    Autopackage,
+    AutopackageOptions,
+} from '../components/NpmAutopackage'
 
 export default class NpmAutopackageTest extends AbstractSpruceTest {
     private static instance: Autopackage
@@ -14,7 +22,37 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
         assert.isTruthy(this.instance, 'Should create an instance!')
     }
 
-    private static NpmAutopackage() {
-        return NpmAutopackage.Create()
+    @test()
+    protected static async throwsWithMissingRequiredOptions() {
+        // @ts-ignore
+        const err = await assert.doesThrowAsync(() => NpmAutopackage.Create())
+
+        errorAssert.assertError(err, 'MISSING_PARAMETERS', {
+            parameters: [
+                'name',
+                'description',
+                'gitNamespace',
+                'npmNamespace',
+                'installDir',
+            ],
+        })
+    }
+
+    private static readonly packageName = generateId()
+    private static readonly packageDescription = generateId()
+    private static readonly gitNamespace = generateId()
+    private static readonly npmNamespace = generateId()
+    private static readonly installDir = generateId()
+
+    private static readonly defaultOptions = {
+        name: this.packageName,
+        description: this.packageDescription,
+        gitNamespace: this.gitNamespace,
+        npmNamespace: this.npmNamespace,
+        installDir: this.installDir,
+    }
+
+    private static NpmAutopackage(options?: Partial<AutopackageOptions>) {
+        return NpmAutopackage.Create({ ...this.defaultOptions, ...options })
     }
 }
