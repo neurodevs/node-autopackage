@@ -16,6 +16,7 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
         await super.beforeEach()
 
         this.fakeExecToPreventActual()
+        this.fakeChdirToPreventActual()
 
         this.instance = await this.NpmAutopackage()
     }
@@ -42,6 +43,19 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
     }
 
     @test()
+    protected static async callsChdirToInstallDir() {
+        let passedDir = ''
+
+        NpmAutopackage.chdir = (dir: string) => {
+            passedDir = dir
+        }
+
+        await this.NpmAutopackage()
+
+        assert.isEqual(passedDir, this.installDir, 'Should have changed dir!')
+    }
+
+    @test()
     protected static async callsSpruceDotCreateModule() {
         let calledCmd = ''
 
@@ -63,6 +77,10 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
     private static fakeExecToPreventActual() {
         // @ts-ignore
         NpmAutopackage.execSync = () => {}
+    }
+
+    private static fakeChdirToPreventActual() {
+        NpmAutopackage.chdir = () => {}
     }
 
     private static readonly packageName = generateId()

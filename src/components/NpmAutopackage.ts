@@ -3,6 +3,7 @@ import { assertOptions } from '@sprucelabs/schema'
 
 export default class NpmAutopackage implements Autopackage {
     public static Class?: AutopackageConstructor
+    public static chdir = process.chdir
     public static execSync = execSync
 
     private packageName: string
@@ -27,11 +28,20 @@ export default class NpmAutopackage implements Autopackage {
     }
 
     public async createPackage() {
+        this.chdirToInstallDir()
         this.executeCreateModule()
+    }
+
+    private chdirToInstallDir() {
+        this.chdir(this.installDir)
     }
 
     private executeCreateModule() {
         this.execSync(this.createModuleCmd, { encoding: 'utf-8' })
+    }
+
+    private get chdir() {
+        return NpmAutopackage.chdir
     }
 
     private get execSync() {
