@@ -14,7 +14,8 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
 
     protected static async beforeEach() {
         await super.beforeEach()
-        this.instance = this.NpmAutopackage()
+
+        this.instance = await this.NpmAutopackage()
     }
 
     @test()
@@ -36,6 +37,25 @@ export default class NpmAutopackageTest extends AbstractSpruceTest {
                 'installDir',
             ],
         })
+    }
+
+    @test()
+    protected static async callsSpruceDotCreateModule() {
+        let calledCmd = ''
+
+        // @ts-ignore
+        NpmAutopackage.exec = (cmd: string) => {
+            calledCmd = cmd
+            return ''
+        }
+
+        await this.NpmAutopackage()
+
+        assert.isEqual(
+            calledCmd,
+            `spruce create.module --destination ${this.installDir}`,
+            'Should have called exec!'
+        )
     }
 
     private static readonly packageName = generateId()
